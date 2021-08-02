@@ -2,17 +2,17 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"image/png"
 	"log"
 	"os"
-	"path/filepath"
+	"path"
+	"strings"
 
+	"github.com/nfnt/resize"
 	"github.com/stewie1520/i2a/lib"
 )
 
 var imagePath = flag.String("f", "", "path to image")
-var outDir = flag.String("o", "", "path to output directory")
+var dirPath = flag.String("d", ".", "output directory")
 
 func main() {
 	flag.Parse()
@@ -20,24 +20,22 @@ func main() {
 		log.Fatal("file parameter is required")
 	}
 
-	outFilename := filepath.Base(*imagePath)
-	outDestination := *outDir + "/" + outFilename
-
-	if *outDir == "" {
-		*outDir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	}
-
 	img, err := lib.OpenImage(*imagePath)
+
+	newImage := resize.Resize(160, 0, img, resize.Bilinear)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pixels := lib.ImageToPixels(&img)
-	lib.ConvertToGreyScale(pixels)
+	pixels := lib.ImageToPixels(&newImage)
 
-	f, _ := os.Create(outDestination)
-	png.Encode(f, lib.PixelsToRGBAImage(pixels))
+	asciis := lib.ConvertGreyToAscii(pixels)
 
-	fmt.Println("Saved at: " + outDestination)
+	f, _ := os.Create(*dirPath + "/" + path.Base(*imagePath) + ".txt")
+	defer f.Close()
+
+	for x := 0; x < len(*asciis); x++ {
+		f.WriteString(strings.Join((*asciis)[x], "") + "\n")
+	}
 }

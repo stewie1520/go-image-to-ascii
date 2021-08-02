@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/jpeg"
+	"image/png"
 	"os"
 )
 
@@ -17,7 +17,7 @@ func OpenImage(path string) (image.Image, error) {
 
 	defer f.Close()
 
-	img, err := jpeg.Decode(f)
+	img, err := png.Decode(f)
 	if err != nil {
 		fmt.Println("Decoding error:", err.Error())
 		return nil, err
@@ -47,7 +47,7 @@ func PixelsToRGBAImage(pixels *[][]color.Color) *image.RGBA {
 	nImg := image.NewRGBA(rect)
 
 	for x := 0; x < len(*pixels); x++ {
-		for y := 0; y < len(*pixels); y++ {
+		for y := 0; y < len((*pixels)[x]); y++ {
 			nImg.Set(x, y, (*pixels)[x][y])
 		}
 	}
